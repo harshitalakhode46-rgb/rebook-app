@@ -186,6 +186,42 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+# Time Capsule Schemas
+class BookMemoryCreate(BaseModel):
+    memory: str
+    year_read: Optional[int] = None
+    mood_tag: Optional[str] = None
+
+
+class BookMemoryResponse(BaseModel):
+    id: int
+    book_id: int
+    memory: str
+    year_read: Optional[int]
+    mood_tag: Optional[str]
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Reading Chain Schemas
+class ChainEntryCreate(BaseModel):
+    note: Optional[str] = None
+    city: Optional[str] = None
+
+
+class ChainEntryResponse(BaseModel):
+    id: int
+    book_id: int
+    user_id: int
+    note: Optional[str]
+    city: Optional[str]
+    read_at: datetime
+    user: UserResponse
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # General Response
 class MessageResponse(BaseModel):
     message: str

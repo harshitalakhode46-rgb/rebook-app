@@ -23,9 +23,15 @@
                 <a href="#" onclick="showSection('myBooks'); return false;" class="nav-mybooks" style="display: none;">📚 My Books</a>
                 <a href="#" onclick="showSection('cart'); return false;">Cart <span id="cartCount" class="badge">0</span></a>
                 <a href="#" onclick="showSection('orders'); return false;">My Orders</a>
-                <a href="#" onclick="showSection('wishlist'); return false;" class="nav-wishlist" style="display:none;">❤️ Wishlist</a>
-                <a href="#" onclick="showSection('swap'); return false;" class="nav-swap" style="display:none;">🔄 Swap</a>
-                <a href="#" onclick="showSection('leaderboard'); return false;">🌱 Eco Board</a>
+                <div class="nav-more" id="navMore">
+                    <button class="nav-more-btn" onclick="toggleMoreMenu()" title="More features">⋯</button>
+                    <div class="nav-more-dropdown" id="navMoreDropdown">
+                        <a href="#" onclick="toggleMoreMenu(); showSection('wishlist'); return false;" class="nav-wishlist" style="display:none;">❤️ Wishlist</a>
+                        <a href="#" onclick="toggleMoreMenu(); showSection('swap'); return false;" class="nav-swap" style="display:none;">🔄 Book Swap</a>
+                        <a href="#" onclick="toggleMoreMenu(); showSection('leaderboard'); return false;">🌱 Eco Board</a>
+                        <a href="#" onclick="toggleMoreMenu(); showSection('timecapsule'); return false;">⏳ Time Capsule</a>
+                    </div>
+                </div>
                 <a href="#" onclick="showSection('dashboard'); return false;" class="nav-dashboard" style="display: none;">📊 Dashboard</a>
                 <div class="nav-auth" id="navAuth">
                     <button onclick="showSection('login')" class="btn-secondary">Login</button>
@@ -161,6 +167,22 @@
                         <input type="checkbox" name="swap_available" id="swapAvailableCheck">
                         🔄 Available for Book Swap
                     </label>
+                    <div class="capsule-field">
+                        <label style="font-weight:600;">⏳ Add a Time Capsule Memory <span style="font-weight:400;color:#888;">(optional)</span></label>
+                        <textarea name="capsule_memory" id="capsuleMemoryInput" placeholder="Share a personal memory about this book... When did you read it? How did it make you feel? What were you going through?" rows="3"></textarea>
+                        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+                            <input type="number" name="capsule_year" id="capsuleYearInput" placeholder="Year you read it" min="1900" max="2099" style="flex:1;">
+                            <select name="capsule_mood" id="capsuleMoodInput" style="flex:1;">
+                                <option value="">Mood tag (optional)</option>
+                                <option value="nostalgic">💛 Nostalgic</option>
+                                <option value="inspiring">✨ Inspiring</option>
+                                <option value="emotional">😢 Emotional</option>
+                                <option value="adventurous">🌍 Adventurous</option>
+                                <option value="funny">😂 Funny</option>
+                                <option value="mindblowing">🤯 Mind-blowing</option>
+                            </select>
+                        </div>
+                    </div>
                     <input type="file" name="image" required>
                     <button type="submit" class="btn-primary">List Book</button>
                 </form>
@@ -265,6 +287,23 @@
             <div class="form-container">
                 <h2>My Profile</h2>
                 <div id="profileContent"></div>
+            </div>
+        </section>
+
+        <!-- Time Capsule Section -->
+        <section id="timecapsule" class="section">
+            <h2>⏳ Book Time Capsule</h2>
+            <p style="color:#666;margin-bottom:1.5rem;">Every book carries a story. Search any book to read the seller's personal memory — or add your own reading journey to its chain.</p>
+            <div class="capsule-search-bar">
+                <input type="text" id="capsuleSearchInput" placeholder="Search book by title..." class="search-input" style="flex:1;">
+                <button onclick="searchCapsuleBook()" class="btn-primary">Search</button>
+            </div>
+            <div id="capsuleResults" class="books-grid" style="margin-top:1.5rem;"></div>
+
+            <!-- Book Capsule Detail Modal -->
+            <div id="capsuleDetail" style="display:none;margin-top:2rem;">
+                <button onclick="document.getElementById('capsuleDetail').style.display='none'" class="btn-back">&larr; Back to results</button>
+                <div id="capsuleDetailContent"></div>
             </div>
         </section>
 

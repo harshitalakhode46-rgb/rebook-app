@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/books")
 @router.get("", response_model=List[BookResponse])
 def list_books(
     skip: int = 0,
-    limit: int = 20,
+    limit: int = 200,
     category: Optional[str] = None,
     search: Optional[str] = None,
     min_price: Optional[float] = None,

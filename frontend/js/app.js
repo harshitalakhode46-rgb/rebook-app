@@ -81,6 +81,7 @@ function showSection(sectionId) {
     else if (sectionId === 'wishlist') loadWishlist();
     else if (sectionId === 'swap') loadSwapBooks();
     else if (sectionId === 'leaderboard') loadLeaderboard();
+    else if (sectionId === 'timecapsule') { document.getElementById('capsuleResults').innerHTML=''; document.getElementById('capsuleDetail').style.display='none'; }
 }
 
 function setupAuthenticatedUI() {
@@ -88,8 +89,8 @@ function setupAuthenticatedUI() {
     document.getElementById('navUser').style.display = 'flex';
     document.querySelector('.nav-sell').style.display = 'block';
     document.querySelector('.nav-mybooks').style.display = 'block';
-    document.querySelector('.nav-wishlist').style.display = 'block';
-    document.querySelector('.nav-swap').style.display = 'block';
+    document.querySelectorAll('.nav-wishlist').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('.nav-swap').forEach(el => el.style.display = 'block');
     document.getElementById('userName').textContent =
         (currentUser && (currentUser.full_name || currentUser.username)) || '';
     if (currentUser && currentUser.is_admin) {
@@ -102,8 +103,8 @@ function resetToLoggedOutUI() {
     document.getElementById('navUser').style.display = 'none';
     document.querySelector('.nav-sell').style.display = 'none';
     document.querySelector('.nav-mybooks').style.display = 'none';
-    document.querySelector('.nav-wishlist').style.display = 'none';
-    document.querySelector('.nav-swap').style.display = 'none';
+    document.querySelectorAll('.nav-wishlist').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.nav-swap').forEach(el => el.style.display = 'none');
     document.querySelector('.nav-dashboard').style.display = 'none';
 }
 
@@ -187,9 +188,11 @@ async function loadBooks() {
 }
 
 function bookImageHtml(image_url, cls = 'book-img') {
-    if (!image_url) return '';
-    const src = image_url.startsWith('http') ? image_url : `http://localhost:8000/${image_url}`;
-    return `<img src="${src}" class="${cls}" onerror="this.style.display='none'">`;
+    const src = image_url
+        ? (image_url.startsWith('http') ? image_url : `http://localhost:8000/${image_url}`)
+        : '';
+    const fallback = `https://via.placeholder.com/200x280/667eea/ffffff?text=📚`;
+    return `<img src="${src || fallback}" class="${cls}" onerror="this.onerror=null;this.src='${fallback}'">`;
 }
 
 function displayBooks(books) {
@@ -245,6 +248,20 @@ async function handleSellBook(event) {
             body: sendData
         });
         if (response.ok) {
+            const newBook = await response.json();
+            // Save Time Capsule memory if provided
+            const memory = formData.get('capsule_memory')?.trim();
+            if (memory) {
+                await authFetch(`${API_URL}/capsule/memory/${newBook.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        memory,
+                        year_read: formData.get('capsule_year') ? parseInt(formData.get('capsule_year')) : null,
+                        mood_tag: formData.get('capsule_mood') || null
+                    })
+                });
+            }
             showAlert('Book listed successfully! +10 🌱 Eco Points earned!', 'success');
             event.target.reset();
             showSection('myBooks');
@@ -436,9 +453,19 @@ async function loadCheckout() {
         if (items.length === 0) { showAlert('Your cart is empty', 'error'); showSection('cart'); return; }
 
         let total = 0;
+        const unavailable = items.filter(i => !i.book.is_available);
+        const available = items.filter(i => i.book.is_available);
+
+        if (unavailable.length) {
+            showAlert(`⚠️ ${unavailable.map(i => `"${i.book.title}"`).join(', ')} no longer available — removed from cart.`, 'error');
+            // Remove unavailable from cart
+            await Promise.all(unavailable.map(i => authFetch(`${API_URL}/cart/${i.id}`, { method: 'DELETE' })));
+            if (!available.length) { showSection('cart'); return; }
+        }
+
         document.getElementById('checkoutItemsList').innerHTML =
             '<div class="checkout-items">' +
-            items.map(item => {
+            available.map(item => {
                 const t = item.book.price * item.quantity;
                 total += t;
                 return `<div class="checkout-item">
@@ -782,22 +809,54 @@ async function loadProfile() {
 
 function displayProfile(user) {
     const memberSince = new Date(user.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
     document.getElementById('profileContent').innerHTML = `
         <div class="profile-card" id="profileView">
-            <div class="profile-avatar">
-                <span class="avatar-icon">&#128100;</span>
-                <h3>${escapeHtml(user.full_name)}</h3>
-                <span class="username-tag">@${escapeHtml(user.username)}</span>
-                ${user.is_admin ? '<span class="admin-badge">Admin</span>' : ''}
+            <div class="profile-banner">
+                <div class="profile-avatar-circle">${initials}</div>
+                <div class="profile-banner-info">
+                    <h3>${escapeHtml(user.full_name)}</h3>
+                    <span class="username-tag">@${escapeHtml(user.username)}</span>
+                    ${user.is_admin ? '<span class="admin-badge">&#128081; Admin</span>' : '<span class="user-role-badge">&#128218; Reader</span>'}
+                </div>
+                <button onclick="showEditProfile()" class="btn-edit-profile">&#9998; Edit</button>
             </div>
-            <div class="profile-details">
-                <div class="profile-field"><label>Email</label><span>${escapeHtml(user.email)}</span></div>
-                <div class="profile-field"><label>Username</label><span>${escapeHtml(user.username)}</span></div>
-                <div class="profile-field"><label>Phone</label><span>${user.phone ? escapeHtml(user.phone) : '<em>Not provided</em>'}</span></div>
-                <div class="profile-field"><label>Address</label><span>${user.address ? escapeHtml(user.address) : '<em>Not provided</em>'}</span></div>
-                <div class="profile-field"><label>Member Since</label><span>${memberSince}</span></div>
+            <div class="profile-stats-row">
+                <div class="profile-stat" onclick="showSection('myBooks')" title="My Books">
+                    <span class="profile-stat-icon">&#128218;</span>
+                    <span class="profile-stat-label">My Books</span>
+                </div>
+                <div class="profile-stat" onclick="showSection('orders')" title="Orders">
+                    <span class="profile-stat-icon">&#128230;</span>
+                    <span class="profile-stat-label">Orders</span>
+                </div>
+                <div class="profile-stat" onclick="showSection('wishlist')" title="Wishlist">
+                    <span class="profile-stat-icon">&#10084;&#65039;</span>
+                    <span class="profile-stat-label">Wishlist</span>
+                </div>
+                <div class="profile-stat" onclick="showSection('leaderboard')" title="Eco Points">
+                    <span class="profile-stat-icon">&#127807;</span>
+                    <span class="profile-stat-label">${user.eco_points || 0} pts</span>
+                </div>
             </div>
-            <button onclick="showEditProfile()" class="btn-primary" style="margin-top:1.5rem;">Edit Profile</button>
+            <div class="profile-info-grid">
+                <div class="profile-info-item">
+                    <span class="pii-icon">&#128231;</span>
+                    <div><span class="pii-label">Email</span><span class="pii-value">${escapeHtml(user.email)}</span></div>
+                </div>
+                <div class="profile-info-item">
+                    <span class="pii-icon">&#128241;</span>
+                    <div><span class="pii-label">Phone</span><span class="pii-value">${user.phone ? escapeHtml(user.phone) : '<em style="color:#aaa">Not provided</em>'}</span></div>
+                </div>
+                <div class="profile-info-item">
+                    <span class="pii-icon">&#128205;</span>
+                    <div><span class="pii-label">Address</span><span class="pii-value">${user.address ? escapeHtml(user.address) : '<em style="color:#aaa">Not provided</em>'}</span></div>
+                </div>
+                <div class="profile-info-item">
+                    <span class="pii-icon">&#128197;</span>
+                    <div><span class="pii-label">Member Since</span><span class="pii-value">${memberSince}</span></div>
+                </div>
+            </div>
         </div>
         <div class="profile-edit" id="profileEdit" style="display:none;">
             <h3>Edit Profile</h3>
@@ -1131,13 +1190,20 @@ async function loadSwapBooks() {
 
 async function openSwapModal(wantedBookId, wantedTitle) {
     if (!getToken()) { showAlert('Please login to swap books', 'error'); return; }
-    const res = await authFetch(`${API_URL}/books/seller/my-books`);
-    const myBooks = await res.json();
-    const available = myBooks.filter(b => b.is_available);
+    const [myBooksRes, wantedRes] = await Promise.all([
+        authFetch(`${API_URL}/books/seller/my-books`),
+        fetch(`${API_URL}/books/${wantedBookId}`)
+    ]);
+    const myBooks = await myBooksRes.json();
+    const wantedBook = await wantedRes.json();
+    // Filter out: unavailable books AND the wanted book's seller's own books
+    const available = myBooks.filter(b => b.is_available && b.id !== wantedBookId);
     if (!available.length) {
-        showAlert('You need to list at least one book to offer a swap!', 'error');
+        showAlert('You need to list at least one other book to offer a swap!', 'error');
         return;
     }
+    // Remove existing modal if any
+    document.getElementById('swapModalOverlay')?.remove();
     const overlay = document.createElement('div');
     overlay.id = 'swapModalOverlay';
     overlay.innerHTML = `
@@ -1167,8 +1233,8 @@ async function submitSwap(wantedBookId) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wanted_book_id: wantedBookId, offered_book_id: offeredBookId, message })
     });
-    document.getElementById('swapModalOverlay').remove();
     if (res && res.ok) {
+        document.getElementById('swapModalOverlay').remove();
         showAlert('Swap offer sent! The owner will review your offer.', 'success');
     } else {
         const err = await res.json();
@@ -1261,5 +1327,131 @@ async function loadLeaderboard() {
                         : '<span style="color:#888;font-size:0.9rem;">No badges yet — start buying, selling & swapping!</span>'}
                 </div>
             </div>`;
+    }
+}
+
+// ─── Three dots more menu ────────────────────────────────────────────────────
+function toggleMoreMenu() {
+    const dd = document.getElementById('navMoreDropdown');
+    dd.classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#navMore')) {
+        document.getElementById('navMoreDropdown')?.classList.remove('open');
+    }
+});
+
+// ─── Time Capsule & Reading Chain ─────────────────────────────────────────────
+
+async function searchCapsuleBook() {
+    const query = document.getElementById('capsuleSearchInput').value.trim();
+    if (!query) { showAlert('Enter a book title to search', 'error'); return; }
+    const res = await fetch(`${API_URL}/books?search=${encodeURIComponent(query)}`);
+    const books = await res.json();
+    const grid = document.getElementById('capsuleResults');
+    document.getElementById('capsuleDetail').style.display = 'none';
+    if (!books.length) { grid.innerHTML = '<p>No books found.</p>'; return; }
+    grid.innerHTML = books.map(b => `
+        <div class="book-card" onclick="openCapsuleDetail(${b.id})" style="cursor:pointer;">
+            ${bookImageHtml(b.image_url)}
+            <div class="book-card-body">
+                <h3>${escapeHtml(b.title)}</h3>
+                <p class="author">by ${escapeHtml(b.author)}</p>
+            </div>
+            <div class="book-card-footer">
+                <p class="price">&#8377;${b.price.toFixed(2)}</p>
+                <button class="btn-primary" style="font-size:0.8rem;padding:0.3rem 0.7rem;">⏳ View Story</button>
+            </div>
+        </div>`).join('');
+}
+
+async function openCapsuleDetail(bookId) {
+    document.getElementById('capsuleResults').innerHTML = '';
+    const detail = document.getElementById('capsuleDetail');
+    detail.style.display = 'block';
+    const content = document.getElementById('capsuleDetailContent');
+    content.innerHTML = '<p>Loading...</p>';
+
+    const [bookRes, chainRes] = await Promise.all([
+        fetch(`${API_URL}/books/${bookId}`),
+        fetch(`${API_URL}/capsule/chain/${bookId}`)
+    ]);
+    const book = await bookRes.json();
+    const chain = await chainRes.json();
+
+    let memoryHtml = '';
+    try {
+        const memRes = await fetch(`${API_URL}/capsule/memory/${bookId}`);
+        if (memRes.ok) {
+            const mem = await memRes.json();
+            const moodEmojis = { nostalgic:'💛', inspiring:'✨', emotional:'😢', adventurous:'🌍', funny:'😂', mindblowing:'🤯' };
+            const moodEmoji = mem.mood_tag ? (moodEmojis[mem.mood_tag] || '📖') : '📖';
+            memoryHtml = `
+                <div class="capsule-memory-box">
+                    <div class="capsule-memory-header">
+                        <span class="capsule-icon">⏳</span>
+                        <span>Seller's Time Capsule Memory</span>
+                        ${mem.mood_tag ? `<span class="mood-tag">${moodEmoji} ${mem.mood_tag}</span>` : ''}
+                        ${mem.year_read ? `<span class="year-tag">📅 ${mem.year_read}</span>` : ''}
+                    </div>
+                    <p class="capsule-memory-text">"${escapeHtml(mem.memory)}"</p>
+                </div>`;
+        }
+    } catch (_) {}
+
+    const chainHtml = chain.length
+        ? chain.map((e, i) => `
+            <div class="chain-entry">
+                <div class="chain-node">${i + 1}</div>
+                <div class="chain-entry-body">
+                    <strong>${escapeHtml(e.user.full_name)}</strong>
+                    ${e.city ? `<span class="chain-city">📍 ${escapeHtml(e.city)}</span>` : ''}
+                    <span class="chain-date">${new Date(e.read_at).toLocaleDateString('en-IN', {year:'numeric',month:'short'})}</span>
+                    ${e.note ? `<p class="chain-note">"${escapeHtml(e.note)}"</p>` : ''}
+                </div>
+            </div>`).join('<div class="chain-connector">↓</div>')
+        : '<p style="color:#888;">No one has logged their reading journey yet. Be the first!</p>';
+
+    const addEntryHtml = getToken() ? `
+        <div class="chain-add-form">
+            <h4>📖 Add Your Reading Journey</h4>
+            <input type="text" id="chainCity" placeholder="Your city (optional)" class="search-input" style="margin-bottom:0.5rem;">
+            <textarea id="chainNote" placeholder="A short note about your experience with this book..." rows="2" style="width:100%;padding:0.5rem;border:1px solid #ddd;border-radius:6px;font-family:inherit;"></textarea>
+            <button onclick="addChainEntry(${bookId})" class="btn-primary" style="margin-top:0.5rem;">Add to Chain</button>
+        </div>` : `<p style="color:#888;margin-top:1rem;"><a href="#" onclick="showSection('login')">Login</a> to add your reading journey.</p>`;
+
+    content.innerHTML = `
+        <div class="capsule-detail-wrap">
+            <div class="capsule-book-header">
+                ${bookImageHtml(book.image_url, 'capsule-book-img')}
+                <div>
+                    <h2>${escapeHtml(book.title)}</h2>
+                    <p class="author">by ${escapeHtml(book.author)}</p>
+                    <span class="category">${escapeHtml(book.category)}</span>
+                </div>
+            </div>
+            ${memoryHtml || '<div class="capsule-no-memory">📭 This book has no time capsule memory yet.</div>'}
+            <div class="reading-chain-section">
+                <h3>📍 Reading Chain <span style="font-size:0.85rem;color:#888;font-weight:400;">(${chain.length} reader${chain.length !== 1 ? 's' : ''})</span></h3>
+                <div class="chain-list">${chainHtml}</div>
+                ${addEntryHtml}
+            </div>
+        </div>`;
+}
+
+async function addChainEntry(bookId) {
+    const note = document.getElementById('chainNote').value.trim();
+    const city = document.getElementById('chainCity').value.trim();
+    const res = await authFetch(`${API_URL}/capsule/chain/${bookId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: note || null, city: city || null })
+    });
+    if (res && res.ok) {
+        showAlert('Your reading journey added to the chain! 📖', 'success');
+        openCapsuleDetail(bookId);
+    } else {
+        const err = await res.json();
+        showAlert(err.detail || 'Failed to add entry', 'error');
     }
 }

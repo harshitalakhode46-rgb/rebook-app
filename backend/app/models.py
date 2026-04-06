@@ -139,3 +139,32 @@ class SwapOffer(Base):
     owner = relationship("User", foreign_keys=[owner_id], back_populates="swap_offers_received")
     wanted_book = relationship("Book", foreign_keys=[wanted_book_id])
     offered_book = relationship("Book", foreign_keys=[offered_book_id])
+
+
+class BookMemory(Base):
+    """Time Capsule: seller attaches a personal memory/story to a book"""
+    __tablename__ = "book_memories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), unique=True, nullable=False)
+    memory = Column(Text, nullable=False)          # seller's personal story
+    year_read = Column(Integer)                    # optional: year seller read it
+    mood_tag = Column(String(50))                  # e.g. "nostalgic", "inspiring"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    book = relationship("Book", backref="memory", uselist=False)
+
+
+class ReadingChainEntry(Base):
+    """Reading Chain: every owner of a book logs their entry"""
+    __tablename__ = "reading_chain"
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    note = Column(Text)                            # short note from this reader
+    city = Column(String(100))                     # optional city
+    read_at = Column(DateTime, default=datetime.utcnow)
+
+    book = relationship("Book", backref="chain_entries")
+    user = relationship("User")

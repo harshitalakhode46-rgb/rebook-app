@@ -23,6 +23,7 @@ from app.routes.routes_admin import router as admin_router
 from app.routes.routes_wishlist import router as wishlist_router
 from app.routes.routes_swap import router as swap_router
 from app.routes.routes_extras import router as extras_router
+from app.routes.routes_capsule import router as capsule_router
 
 
 @asynccontextmanager
@@ -39,6 +40,8 @@ async def lifespan(app: FastAPI):
         for sql in [
             "ALTER TABLE users ADD COLUMN eco_points INTEGER DEFAULT 0",
             "ALTER TABLE books ADD COLUMN swap_available BOOLEAN DEFAULT 0",
+            "CREATE TABLE IF NOT EXISTS book_memories (id INTEGER PRIMARY KEY, book_id INTEGER UNIQUE NOT NULL REFERENCES books(id), memory TEXT NOT NULL, year_read INTEGER, mood_tag VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP)",
+            "CREATE TABLE IF NOT EXISTS reading_chain (id INTEGER PRIMARY KEY, book_id INTEGER NOT NULL REFERENCES books(id), user_id INTEGER NOT NULL REFERENCES users(id), note TEXT, city VARCHAR(100), read_at DATETIME DEFAULT CURRENT_TIMESTAMP)",
         ]:
             try:
                 conn.execute(text(sql))
@@ -100,6 +103,7 @@ app.include_router(admin_router,    tags=["6. Admin"])
 app.include_router(wishlist_router, tags=["7. Wishlist"])
 app.include_router(swap_router,     tags=["8. Book Swap"])
 app.include_router(extras_router,   tags=["9. Extras"])
+app.include_router(capsule_router,  tags=["10. Time Capsule & Reading Chain"])
 
 
 @app.get("/")

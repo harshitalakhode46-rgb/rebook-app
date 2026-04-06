@@ -1641,3 +1641,404 @@ footer {
 .lb-name { flex: 1; font-weight: 600; color: #2c3e50; }
 .lb-name small { color: #888; font-weight: 400; margin-left: 0.4rem; }
 .lb-pts { font-weight: 700; color: #27ae60; font-size: 1.05rem; }
+
+/* ─── Time Capsule & Reading Chain ─────────────────────────────────────────── */
+
+.capsule-search-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.capsule-field {
+    background: linear-gradient(135deg, #fff8e1, #fffde7);
+    border: 1.5px dashed #f9a825;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.capsule-detail-wrap {
+    max-width: 750px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.capsule-book-header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.capsule-book-img {
+    width: 90px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Time Capsule Memory Box */
+.capsule-memory-box {
+    background: linear-gradient(135deg, #fff8e1 0%, #fffde7 100%);
+    border: 1.5px solid #f9a825;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.capsule-memory-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    color: #e65100;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.capsule-icon { font-size: 1.3rem; }
+
+.mood-tag {
+    background: #fff3e0;
+    color: #bf360c;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.year-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.capsule-memory-text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #4a4a4a;
+    font-style: italic;
+    padding-left: 1rem;
+    border-left: 3px solid #f9a825;
+}
+
+.capsule-no-memory {
+    background: #f8f9fa;
+    border: 1.5px dashed #ccc;
+    border-radius: 10px;
+    padding: 1.25rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* Reading Chain */
+.reading-chain-section h3 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 1.25rem;
+}
+
+.chain-list {
+    margin-bottom: 1.5rem;
+}
+
+.chain-entry {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid #3498db;
+}
+
+.chain-node {
+    background: #3498db;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.chain-entry-body {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.chain-entry-body strong {
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+
+.chain-city {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.chain-date {
+    color: #888;
+    font-size: 0.8rem;
+    margin-left: auto;
+}
+
+.chain-note {
+    width: 100%;
+    font-style: italic;
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+    line-height: 1.5;
+}
+
+.chain-connector {
+    text-align: center;
+    color: #3498db;
+    font-size: 1.2rem;
+    line-height: 1;
+    margin: 0.25rem 0;
+    padding-left: 14px;
+}
+
+.chain-add-form {
+    background: #f0f7ff;
+    border: 1.5px dashed #3498db;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.chain-add-form h4 {
+    font-size: 1rem;
+    color: #1a6fc4;
+    margin-bottom: 0.75rem;
+}
+
+/* Swap modal overlay fix */
+#swapModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+/* ─── Three Dots More Menu ───────────────────────────────────────────────────── */
+.nav-more { position: relative; }
+
+.nav-more-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+.nav-more-btn:hover { background: rgba(255,255,255,0.3); }
+
+.nav-more-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    min-width: 190px;
+    z-index: 2000;
+    overflow: hidden;
+    animation: slideUp 0.2s ease;
+}
+.nav-more-dropdown.open { display: block; }
+
+.nav-more-dropdown a {
+    display: flex !important;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.2rem;
+    color: #2c3e50 !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    transition: background 0.15s;
+    border-bottom-color: transparent !important;
+}
+.nav-more-dropdown a:last-child { border-bottom: none; }
+.nav-more-dropdown a:hover { background: #f0f7ff; color: #3498db !important; }
+
+/* ─── Creative Profile Card ──────────────────────────────────────────────────── */
+#profile .form-container {
+    max-width: 600px;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.profile-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    position: relative;
+    border-radius: 16px 16px 0 0;
+}
+
+.profile-avatar-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    border: 3px solid rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+}
+
+.profile-banner-info { flex: 1; }
+.profile-banner-info h3 {
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+.profile-banner-info .username-tag { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+.user-role-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 0.15rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+.btn-edit-profile {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.2);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    color: #fff;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: auto;
+    margin: 0;
+}
+.btn-edit-profile:hover { background: rgba(255,255,255,0.35); }
+
+.profile-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #fff;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.profile-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-right: 1px solid #f0f0f0;
+}
+.profile-stat:last-child { border-right: none; }
+.profile-stat:hover { background: #f8f0ff; }
+
+.profile-stat-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.profile-stat-label { font-size: 0.75rem; font-weight: 600; color: #666; text-align: center; }
+
+.profile-info-grid {
+    background: #fff;
+    border-radius: 0 0 16px 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.profile-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.85rem 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 3px solid #667eea;
+}
+
+.pii-icon { font-size: 1.2rem; margin-top: 1px; flex-shrink: 0; }
+.pii-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #999;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+}
+.pii-value { font-size: 0.95rem; color: #2c3e50; font-weight: 500; }
+
+.profile-edit {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}

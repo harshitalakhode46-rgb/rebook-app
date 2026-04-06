@@ -71,9 +71,15 @@ def create_order(
                 detail=f"Book {item.book_id} not found"
             )
         if not book.is_available:
+            # Auto-remove unavailable book from cart and skip
+            db.query(CartItem).filter(
+                CartItem.user_id == current_user.id,
+                CartItem.book_id == item.book_id
+            ).delete(synchronize_session=False)
+            db.commit()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Book '{book.title}' is not available"
+                detail=f"'{book.title}' is no longer available and has been removed from your cart. Please review your cart."
             )
         
         item_total = book.price * item.quantity
